@@ -17,15 +17,15 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Log into registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: techarohq
@@ -33,9 +33,12 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
           images: ghcr.io/techarohq/anubis/docs
+          tags: |
+            type=sha,enable=true,priority=100,prefix=,suffix=,format=long
+            main
 
       - name: Build and push
         id: build
@@ -49,15 +52,15 @@ jobs:
           platforms: linux/amd64
           push: true
 
-      - name: Apply k8s manifests to aeacus
-        uses: actions-hub/kubectl@d50394b7d704525f93faefce1e65a6329ff67271 # v1.33.2
+      - name: Apply k8s manifests to limsa lominsa
+        uses: actions-hub/kubectl@3ece3793e7a9fe94effe257d03ac834c815ea87d # v1.35.1
         env:
           KUBE_CONFIG: ${{ secrets.LIMSA_LOMINSA_KUBECONFIG }}
         with:
           args: apply -k docs/manifest
 
-      - name: Apply k8s manifests to aeacus
-        uses: actions-hub/kubectl@d50394b7d704525f93faefce1e65a6329ff67271 # v1.33.2
+      - name: Apply k8s manifests to limsa lominsa
+        uses: actions-hub/kubectl@3ece3793e7a9fe94effe257d03ac834c815ea87d # v1.35.1
         env:
           KUBE_CONFIG: ${{ secrets.LIMSA_LOMINSA_KUBECONFIG }}
         with:

@@ -7,56 +7,17 @@ Anubis has the ability to let you import snippets of configuration into the main
 
 EG:
 
-<Tabs>
-<TabItem value="json" label="JSON">
-
-```json
-{
-  "bots": [
-    {
-      "import": "(data)/bots/ai-catchall.yaml"
-    },
-    {
-      "import": "(data)/bots/cloudflare-workers.yaml"
-    }
-  ]
-}
-```
-
-</TabItem>
-<TabItem value="yaml" label="YAML" default>
-
 ```yaml
 bots:
   # Pathological bots to deny
   - # This correlates to data/bots/ai-catchall.yaml in the source tree
     import: (data)/bots/ai-catchall.yaml
   - import: (data)/bots/cloudflare-workers.yaml
+  # Import all the rules in the default configuration
+  - import: (data)/meta/default-config.yaml
 ```
-
-</TabItem>
-</Tabs>
 
 Of note, a bot rule can either have inline bot configuration or import a bot config snippet. You cannot do both in a single bot rule.
-
-<Tabs>
-<TabItem value="json" label="JSON">
-
-```json
-{
-  "bots": [
-    {
-      "import": "(data)/bots/ai-catchall.yaml",
-      "name": "generic-browser",
-      "user_agent_regex": "Mozilla|Opera\n",
-      "action": "CHALLENGE"
-    }
-  ]
-}
-```
-
-</TabItem>
-<TabItem value="yaml" label="YAML" default>
 
 ```yaml
 bots:
@@ -67,9 +28,6 @@ bots:
     action: CHALLENGE
 ```
 
-</TabItem>
-</Tabs>
-
 This will return an error like this:
 
 ```text
@@ -79,33 +37,41 @@ config.BotOrImport: rule definition is invalid, you must set either bot rules or
 
 Paths can either be prefixed with `(data)` to import from the [the data folder in the Anubis source tree](https://github.com/TecharoHQ/anubis/tree/main/data) or anywhere on the filesystem. If you don't have access to the Anubis source tree, check /usr/share/docs/anubis/data or in the tarball you extracted Anubis from.
 
+## Importing the default configuration
+
+If you want to base your configuration off of the default configuration, import `(data)/meta/default-config.yaml`:
+
+```yaml
+bots:
+  - import: (data)/meta/default-config.yaml
+  # Write your rules here
+```
+
+This will keep your configuration up to date as Anubis adapts to emerging threats.
+
+## How do I exempt most modern browsers from Anubis challenges?
+
+If you want to exempt most modern browsers from Anubis challenges, import `(data)/common/acts-like-browser.yaml`:
+
+```yaml
+bots:
+  - import: (data)/meta/default-config.yaml
+  - import: (data)/common/acts-like-browser.yaml
+  # Write your rules here
+```
+
+These rules will allow traffic that "looks like" it's from a modern copy of Edge, Safari, Chrome, or Firefox. These rules used to be enabled by default, however user reports have suggested that AI scraper bots have adapted to conform to these rules to scrape without regard for the infrastructure they are attacking.
+
+Use these rules at your own risk.
+
 ## Importing from imports
 
 You can also import from an imported file in case you want to import an entire folder of rules at once.
-
-<Tabs>
-<TabItem value="json" label="JSON">
-
-```json
-{
-  "bots": [
-    {
-      "import": "(data)/bots/_deny-pathological.yaml"
-    }
-  ]
-}
-```
-
-</TabItem>
-<TabItem value="yaml" label="YAML" default>
 
 ```yaml
 bots:
   - import: (data)/bots/_deny-pathological.yaml
 ```
-
-</TabItem>
-</Tabs>
 
 This lets you import an entire ruleset at once:
 
@@ -124,31 +90,12 @@ Snippets can be written in either JSON or YAML, with a preference for YAML. When
 
 Here is an example snippet that allows [IPv6 Unique Local Addresses](https://en.wikipedia.org/wiki/Unique_local_address) through Anubis:
 
-<Tabs>
-<TabItem value="json" label="JSON">
-
-```json
-[
-  {
-    "name": "ipv6-ula",
-    "action": "ALLOW",
-    "remote_addresses": ["fc00::/7"]
-  }
-]
-```
-
-</TabItem>
-<TabItem value="yaml" label="YAML" default>
-
 ```yaml
 - name: ipv6-ula
   action: ALLOW
   remote_addresses:
     - fc00::/7
 ```
-
-</TabItem>
-</Tabs>
 
 ## Extracting Anubis' embedded filesystem
 
